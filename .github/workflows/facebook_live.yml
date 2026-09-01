@@ -13,12 +13,21 @@ jobs:
           sudo apt-get install -y ffmpeg python3-pip
           pip install yt-dlp
 
+      - name: Create Cookies File
+        env:
+          COOKIES_DATA: ${{ secrets.FB_COOKIES }}
+        run: |
+          echo "$COOKIES_DATA" > cookies.txt
+
       - name: Stream Video to Facebook Live
         env:
           STREAM_URL: ${{ secrets.FB_LIVE_URL }}
           FB_PAGE_URL: "https://www.facebook.com/share/19aoCZr8Vj/"
         run: |
-          DIRECT_URL=$(yt-dlp -g "$FB_PAGE_URL")
+          # کوکیز کی مدد سے فیس بک لنک سے سٹریمنگ URL حاصل کرنا
+          DIRECT_URL=$(yt-dlp --cookies cookies.txt -g "$FB_PAGE_URL")
+          
+          # FFmpeg سے سٹریمنگ شروع کرنا
           ffmpeg -re -i "$DIRECT_URL" \
             -c:v libx264 -preset superfast -maxrate 3000k -bufsize 6000k \
             -pix_fmt yuv420p -g 60 -c:a aac -b:a 128k -ar 44100 \
