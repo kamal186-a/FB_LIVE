@@ -7,11 +7,11 @@ jobs:
   stream:
     runs-on: ubuntu-latest
     steps:
-      - name: Install FFmpeg and yt-dlp
+      - name: Install FFmpeg and Latest yt-dlp
         run: |
           sudo apt-get update
           sudo apt-get install -y ffmpeg python3-pip
-          pip install yt-dlp
+          python3 -m pip install -U --force-reinstall https://github.com/yt-dlp/yt-dlp/archive/master.tar.gz
 
       - name: Create Cookies File
         env:
@@ -24,10 +24,10 @@ jobs:
           STREAM_URL: ${{ secrets.FB_LIVE_URL }}
           FB_PAGE_URL: "https://www.facebook.com/share/19aoCZr8Vj/"
         run: |
-          # کوکیز کی مدد سے فیس بک لنک سے سٹریمنگ URL حاصل کرنا
-          DIRECT_URL=$(yt-dlp --cookies cookies.txt -g "$FB_PAGE_URL")
+          DIRECT_URL=$(yt-dlp --cookies cookies.txt \
+            --user-agent "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
+            -g "$FB_PAGE_URL")
           
-          # FFmpeg سے سٹریمنگ شروع کرنا
           ffmpeg -re -i "$DIRECT_URL" \
             -c:v libx264 -preset superfast -maxrate 3000k -bufsize 6000k \
             -pix_fmt yuv420p -g 60 -c:a aac -b:a 128k -ar 44100 \
