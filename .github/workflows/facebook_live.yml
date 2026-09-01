@@ -22,7 +22,7 @@ jobs:
       - name: Stream Video to Facebook Live
         env:
           STREAM_URL: ${{ secrets.FB_LIVE_URL }}
-          FB_PAGE_URL: "https://www.facebook.com/share/19aoCZr8Vj/"
+          FB_PAGE_URL: "https://www.facebook.com/share/1KQLcMfA6K/"
         run: |
           DIRECT_URL=$(yt-dlp --cookies cookies.txt \
             --user-agent "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
