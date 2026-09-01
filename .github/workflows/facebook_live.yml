@@ -7,22 +7,21 @@ jobs:
   stream:
     runs-on: ubuntu-latest
     steps:
-      - name: Install FFmpeg
+      - name: Install FFmpeg and gdown
         run: |
           sudo apt-get update
-          sudo apt-get install -y ffmpeg
+          sudo apt-get install -y ffmpeg python3-pip
+          pip install gdown
 
-      - name: Download Video from Google Drive and Stream
+      - name: Download Video from Google Drive
+        run: |
+          gdown https://drive.google.com/uc?id=1LZICk4PJTgM6pw5xoEDq1A7wwAPRU1y8 -O video.mp4
+
+      - name: Stream Video to Facebook Live
         env:
           STREAM_URL: ${{ secrets.FB_LIVE_URL }}
-          # Google Drive File ID: 1LZICk4PJTgM6pw5xoEDq1A7wwAPRU1y8
-          FILE_ID: "1LZICk4PJTgM6pw5xoEDq1A7wwAPRU1y8"
         run: |
-          # گوگل ڈرائیو کی ویڈیو کو سرور پر لائیو ڈاؤن لوڈ اور سٹریمنگ کے لیے ڈائریکٹ لنک بنانا
-          DRIVE_URL="https://docs.google.com/uc?export=download&id=$FILE_ID"
-          
-          # FFmpeg سے ڈائریکٹ فیس بک پر سٹریمنگ شروع کرنا
-          ffmpeg -re -i "$DRIVE_URL" \
+          ffmpeg -re -i video.mp4 \
             -c:v libx264 -preset superfast -maxrate 3000k -bufsize 6000k \
             -pix_fmt yuv420p -g 60 -c:a aac -b:a 128k -ar 44100 \
             -f flv "$STREAM_URL"
