@@ -24,11 +24,13 @@ jobs:
           STREAM_URL: ${{ secrets.FB_LIVE_URL }}
           FB_PAGE_URL: "https://www.facebook.com/share/1KQLcMfA6K/"
         run: |
-          DIRECT_URL=$(yt-dlp --cookies cookies.txt \
-            --user-agent "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
-            -g "$FB_PAGE_URL")
+          UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
           
-          ffmpeg -re -i "$DIRECT_URL" \
+          # yt-dlp سے لنک حاصل کرنا
+          DIRECT_URL=$(yt-dlp --cookies cookies.txt --user-agent "$UA" -g "$FB_PAGE_URL")
+          
+          # FFmpeg کو User-Agent فراہم کر کے لائیو سٹریمنگ کرنا
+          ffmpeg -headers "User-Agent: $UA" -re -i "$DIRECT_URL" \
             -c:v libx264 -preset superfast -maxrate 3000k -bufsize 6000k \
             -pix_fmt yuv420p -g 60 -c:a aac -b:a 128k -ar 44100 \
             -f flv "$STREAM_URL"
