@@ -7,30 +7,22 @@ jobs:
   stream:
     runs-on: ubuntu-latest
     steps:
-      - name: Install FFmpeg and Latest yt-dlp
+      - name: Install FFmpeg
         run: |
           sudo apt-get update
-          sudo apt-get install -y ffmpeg python3-pip
-          python3 -m pip install -U --force-reinstall https://github.com/yt-dlp/yt-dlp/archive/master.tar.gz
+          sudo apt-get install -y ffmpeg
 
-      - name: Create Cookies File
-        env:
-          COOKIES_DATA: ${{ secrets.FB_COOKIES }}
-        run: |
-          echo "$COOKIES_DATA" > cookies.txt
-
-      - name: Stream Video to Facebook Live
+      - name: Download Video from Google Drive and Stream
         env:
           STREAM_URL: ${{ secrets.FB_LIVE_URL }}
-          FB_PAGE_URL: "https://www.facebook.com/share/1KQLcMfA6K/"
+          # Google Drive File ID: 1LZICk4PJTgM6pw5xoEDq1A7wwAPRU1y8
+          FILE_ID: "1LZICk4PJTgM6pw5xoEDq1A7wwAPRU1y8"
         run: |
-          UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+          # گوگل ڈرائیو کی ویڈیو کو سرور پر لائیو ڈاؤن لوڈ اور سٹریمنگ کے لیے ڈائریکٹ لنک بنانا
+          DRIVE_URL="https://docs.google.com/uc?export=download&id=$FILE_ID"
           
-          # yt-dlp سے لنک حاصل کرنا
-          DIRECT_URL=$(yt-dlp --cookies cookies.txt --user-agent "$UA" -g "$FB_PAGE_URL")
-          
-          # FFmpeg کو User-Agent فراہم کر کے لائیو سٹریمنگ کرنا
-          ffmpeg -headers "User-Agent: $UA" -re -i "$DIRECT_URL" \
+          # FFmpeg سے ڈائریکٹ فیس بک پر سٹریمنگ شروع کرنا
+          ffmpeg -re -i "$DRIVE_URL" \
             -c:v libx264 -preset superfast -maxrate 3000k -bufsize 6000k \
             -pix_fmt yuv420p -g 60 -c:a aac -b:a 128k -ar 44100 \
             -f flv "$STREAM_URL"
